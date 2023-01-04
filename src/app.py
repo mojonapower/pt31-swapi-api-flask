@@ -39,11 +39,46 @@ def sitemap():
 @app.route('/user', methods=['GET'])
 def handle_hello():
 
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
+    all_users = User.query.all()
+    """
+    new_users = []
+    for i in range(len(all_users)):
+        print(all_users[i])
+        new_users.append(all_users[i].serialize())
+    """
+    all_users = list(map(lambda user: user.serialize() ,all_users))
 
-    return jsonify(response_body), 200
+    return jsonify(all_users), 200
+
+@app.route("/people", methods=["GET"])
+def get_all_people():
+
+    return jsonify({
+        "mensaje": "aca estaran todos los personajes"
+    })
+
+@app.route("/people/<int:id>", methods=["GET"])
+def get_one_people(id):
+
+    return jsonify({
+        "mensaje": "aca estara la info del personaje con id "+str(id)
+    })
+
+@app.route("/favorite/planet/<int:planet_id>", methods=['POST'])
+def post_fav_planet(planet_id):
+    
+    return jsonify({
+        "mensaje": "el planeta con id "+ str(planet_id) + " ha sido agregado"
+    })
+
+@app.route("/favorite/planet/<int:planet_id>", methods=['DELETE'])
+def delete_fav_planet(planet_id):
+    
+    return jsonify({
+        "mensaje": "el planeta con id "+ str(planet_id) + " ha sido eliminado"
+    })
+
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
