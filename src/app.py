@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, People, Fav_People
 #from models import Person
 
 app = Flask(__name__)
@@ -40,15 +40,71 @@ def sitemap():
 def handle_hello():
 
     all_users = User.query.all()
-    """
     new_users = []
     for i in range(len(all_users)):
         print(all_users[i])
         new_users.append(all_users[i].serialize())
-    """
-    all_users = list(map(lambda user: user.serialize() ,all_users))
 
-    return jsonify(all_users), 200
+    return jsonify(new_users), 200
+
+@app.route("/user/<int:id>", methods= ['GET'])
+def one_user(id):
+    one = User.query.get(id) 
+    if(one is None):
+        return "el user no existe"
+    else:
+        return jsonify(one.serialize())
+
+@app.route("/one/<correo>", methods= ['GET'])
+def one_user_mail(correo):
+    one = User.query.filter_by(email=correo).first()
+    if(one is None):
+        return "el user no existe"
+    else:
+        return jsonify(one.serialize())
+
+@app.route("/user", methods=['POST'])
+def new_user():
+   
+    body = request.get_json()
+    print(body)
+    if( "email" not in body):
+        return "falta email"
+    if( "password" not in body):
+        return "falta password"
+
+    user = User.query.filter_by(email= body['email']).first()
+    if(user):
+        return "no puedo registrar  con este mail"
+
+    nuevo = User()
+    nuevo.email = body["email"]
+    nuevo.password = body["password"]
+    nuevo.is_active = True
+
+    db.session.add(nuevo)
+    db.session.commit()
+
+    return "ok"
+
+@app.route("/user/<int:id>", methods=['DELETE'])
+def delete(id):
+    user = User.query.get(id)
+    if(user):
+        db.session.delete(user)
+        db.session.commit()
+        return "user eliminado"
+    else:
+        return "user no existe"
+
+
+
+
+
+
+
+
+
 
 @app.route("/people", methods=["GET"])
 def get_all_people():
